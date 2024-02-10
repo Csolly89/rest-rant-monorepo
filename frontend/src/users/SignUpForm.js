@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react"
-import { useHistory, useParams } from "react-router"
+import { useState } from "react"
+import { useHistory } from "react-router"
 
 function SignUpForm() {
 
@@ -76,12 +76,9 @@ function SignUpForm() {
 							onChange={e => setUser({ ...user, password: e.target.value })}
 							className="form-control"
 							id="password"
-							name="password"
-						/>
+							name="password" />
 					</div>
 				</div>
-
-
 				<input className="btn btn-primary" type="submit" value="Sign Up" />
 			</form>
 		</main>
