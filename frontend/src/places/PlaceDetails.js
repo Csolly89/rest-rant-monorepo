@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { useHistory, useParams } from "react-router"
+import { CurrentUser } from "../contexts/CurrentUser";
 import CommentCard from './CommentCard'
 import NewCommentForm from "./NewCommentForm";
 
@@ -8,6 +9,8 @@ function PlaceDetails() {
 	const { placeId } = useParams()
 
 	const history = useHistory()
+
+	const { currentUser } = useContext(CurrentUser)
 
 	const [place, setPlace] = useState(null)
 
@@ -35,15 +38,11 @@ function PlaceDetails() {
 		history.push('/places')
 	}
 
-async function deleteComment(deletedComment) {
-    const response = await fetch(`http://localhost:5000/places/${place.placeId}/comments/${deletedComment.commentId}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(commentAttributes)
-    })
+	async function deleteComment(deletedComment) {
+		await fetch(`http://localhost:5000/places/${place.placeId}/comments/${deletedComment.commentId}`, {
+			method: 'DELETE'
+		})
+
 		setPlace({
 			...place,
 			comments: place.comments
@@ -52,27 +51,26 @@ async function deleteComment(deletedComment) {
 	}
 
 	async function createComment(commentAttributes) {
-    const response = await fetch(`http://localhost:5000/places/${place.placeId}/comments`, {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(commentAttributes)
-    })
+		const response = await fetch(`http://localhost:5000/places/${place.placeId}/comments`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${localStorage.getItem('token')}`
+			},
+			body: JSON.stringify(commentAttributes)
+		})
 
-    const comment = await response.json()
+		const comment = await response.json()
 
-    setPlace({
-        ...place,
-        comments: [
-            ...place.comments,
-            comment
-        ]
-    })
+		setPlace({
+			...place,
+			comments: [
+				...place.comments,
+				comment
+			]
+		})
 
-}
-
+	}
 
 
 
@@ -107,6 +105,20 @@ async function deleteComment(deletedComment) {
 		})
 	}
 
+	let placeActions = null
+
+	if (currentUser?.role === 'admin') {
+		placeActions = (
+			<>
+				<a className="btn btn-warning" onClick={editPlace}>
+					Edit
+				</a>
+				<button type="submit" className="btn btn-danger" onClick={deletePlace}>
+					Delete
+				</button>
+			</>
+		)
+	}
 
 	return (
 		<main>
@@ -134,12 +146,7 @@ async function deleteComment(deletedComment) {
 						Serving {place.cuisines}.
 					</h4>
 					<br />
-					<a className="btn btn-warning" onClick={editPlace}>
-						Edit
-					</a>{` `}
-					<button type="submit" className="btn btn-danger" onClick={deletePlace}>
-						Delete
-					</button>
+					{placeActions}
 				</div>
 			</div>
 			<hr />
